@@ -5,7 +5,7 @@ sleep, and the amount of coffee consumed during the day.
 
 To do the estimation it uses a CoreML Tabular Regressor model.
 
-This is the project 3 of the SwiftUI edition
+Project 4 of the SwiftUI edition
 of [hackingwithswift](https://www.hackingwithswift.com).
 
 ## Setup
