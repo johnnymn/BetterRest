@@ -2,8 +2,8 @@ import CoreML
 import SwiftUI
 
 struct ContentView: View {
-  // How much sleep the user usually likes.
-  @State private var sleepAmount: Double = 4
+  // How much sleep the user wants.
+  @State private var sleepAmount: Double = 8
   // How much coffee they drink.
   @State private var coffeeAmount = 1
   // When the user wants to wake up.
