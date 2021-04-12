@@ -2,11 +2,19 @@ import SwiftUI
 
 struct ContentView: View {
   // How much sleep the user usually likes.
-  @State private var sleepAmount: Double = 0
-  // When the user wants to wake up.
-  @State private var wakeup = Date()
+  @State private var sleepAmount: Double = 4
   // How much coffee they drink.
   @State private var coffeeAmount = 1
+  // When the user wants to wake up.
+  @State private var wakeup = defaultWakeTime
+
+  static var defaultWakeTime: Date {
+    var components = DateComponents()
+    components.hour = 7
+    components.minute = 0
+
+    return Calendar.current.date(from: components) ?? Date()
+  }
 
   // CoreML Tabular Regressor model.
   private let model = SleepCalculator()
@@ -18,22 +26,31 @@ struct ContentView: View {
 
   var body: some View {
     NavigationView {
-      VStack {
-        Text("When do you want to wake up?").font(.headline)
-        // This date picker will get rendered as a spinning
-        // wheel because it's inside of a VStack.
-        DatePicker("Please enter a time",
-                selection: $wakeup,
-                displayedComponents: .hourAndMinute).labelsHidden()
-
-        Text("Desired amount of sleep").font(.headline)
-        Stepper(value: $sleepAmount, in: 4...12, step: 0.25) {
-          Text("\(sleepAmount, specifier: "%g")")
+      Form {
+        // Put each pair of text view and control in a
+        // VStack so each is displayed as a single row
+        // in the form
+        VStack(alignment: .leading, spacing: 0) {
+          Text("When do you want to wake up?").font(.headline)
+          DatePicker("Please enter a time",
+                  selection: $wakeup,
+                  displayedComponents: .hourAndMinute)
+                  .labelsHidden()
+                  .datePickerStyle(WheelDatePickerStyle())
         }
 
-        Text("Daily coffee intake").font(.headline)
-        Stepper(value: $coffeeAmount, in: 1...20) {
-          Text(coffeeAmount == 1 ? "1 cup" : "\(coffeeAmount) cups")
+        VStack(alignment: .leading, spacing: 0) {
+          Text("Desired amount of sleep").font(.headline)
+          Stepper(value: $sleepAmount, in: 4...12, step: 0.25) {
+            Text("\(sleepAmount, specifier: "%g")")
+          }
+        }
+
+        VStack(alignment: .leading, spacing: 0) {
+          Text("Daily coffee intake").font(.headline)
+          Stepper(value: $coffeeAmount, in: 1...20) {
+            Text(coffeeAmount == 1 ? "1 cup" : "\(coffeeAmount) cups")
+          }
         }
       }.navigationBarTitle("Better Rest")
               .navigationBarItems(trailing: Button(action: calculateBedtime) {
