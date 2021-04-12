@@ -27,6 +27,40 @@ struct ContentView: View {
     }
   }()
 
+  // Estimates the time that the user should go to bed
+  // to get the desired amount of sleep considering the
+  // amount of coffee consumed, and displays it on a
+  // text box.
+  // The prediction is done by the CoreML model.
+  private var bedTime: String {
+    // Break down the wakeup date into hour/minutes.
+    let components = Calendar.current.dateComponents(
+            [.hour, .minute], from: wakeup)
+    let hour = (components.hour ?? 0) * 60 * 60
+    let minutes = (components.minute ?? 0) * 60
+    var bedTime = ""
+
+    // The CoreML prediction can fail.
+    do {
+      let prediction = try model.prediction(
+              wake: Double(hour + minutes),
+              estimatedSleep: sleepAmount,
+              coffee: Double(coffeeAmount))
+
+      let sleepTime = wakeup - prediction.actualSleep
+      let formatter = DateFormatter()
+      formatter.timeStyle = .short
+      bedTime = formatter.string(from: sleepTime)
+    } catch {
+      // Something went wrong, show an alert
+      alertTitle = "Error"
+      alertMessage = "Sorry, there was a problem calculating your bedtime"
+      showingAlert = true
+    }
+
+    return bedTime
+  }
+
   // Prediction output alert.
   @State private var alertTitle = ""
   @State private var alertMessage = ""
@@ -57,51 +91,17 @@ struct ContentView: View {
             Text(coffeeAmount == 1 ? "1 cup" : "\(coffeeAmount) cups")
           }
         }
-      }.navigationBarTitle("Better Rest")
-              .navigationBarItems(trailing: Button(action: calculateBedtime) {
-                Text("Calculate")
-              })
-              .alert(isPresented: $showingAlert) {
-                Alert(
-                        title: Text(alertTitle),
-                        message: Text(alertMessage),
-                        dismissButton: .default(Text("Ok")))
-              }
+
+        Section(header: Text("Recommended bed time")) {
+          Text("\(bedTime)")
+        }
+      }.navigationBarTitle("Better Rest").alert(isPresented: $showingAlert) {
+        Alert(
+                title: Text(alertTitle),
+                message: Text(alertMessage),
+                dismissButton: .default(Text("Ok")))
+      }
     }
-  }
-
-  /// Shows an alert with the time that the user should go
-  /// to bed to get the desired amount of sleep considering
-  /// the amount of coffee consumed.
-  /// This is predicted by a CoreML model.
-  func calculateBedtime() {
-    // Break down the wakeup date into hour/minutes.
-    let components = Calendar.current.dateComponents(
-            [.hour, .minute], from: wakeup)
-    let hour = (components.hour ?? 0) * 60 * 60
-    let minutes = (components.minute ?? 0) * 60
-
-    // The CoreML prediction can fail.
-    do {
-      let prediction = try model.prediction(
-              wake: Double(hour + minutes),
-              estimatedSleep: sleepAmount,
-              coffee: Double(coffeeAmount))
-
-      let sleepTime = wakeup - prediction.actualSleep
-      let formatter = DateFormatter()
-      formatter.timeStyle = .short
-      alertMessage = formatter.string(from: sleepTime)
-      alertTitle = "Your ideal bedtime is..."
-    } catch {
-      // Something went wrong.
-      alertTitle = "Error"
-      alertMessage = "Sorry, there was a problem calculating your bedtime"
-    }
-
-    // Show the alert no mather what, because
-    // we use it for both results and errors.
-    showingAlert = true
   }
 }
 
