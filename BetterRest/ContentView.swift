@@ -1,3 +1,4 @@
+import CoreML
 import SwiftUI
 
 struct ContentView: View {
@@ -17,7 +18,14 @@ struct ContentView: View {
   }
 
   // CoreML Tabular Regressor model.
-  private let model = SleepCalculator()
+  let model: SleepCalculator = {
+    do {
+      return try SleepCalculator(configuration: MLModelConfiguration())
+    } catch {
+      print(error)
+      fatalError("Couldn't create SleepCalculator")
+    }
+  }()
 
   // Prediction output alert.
   @State private var alertTitle = ""
