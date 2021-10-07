@@ -21,6 +21,7 @@ indent_size = 4
 indent_style = tab
 
 [*.swift]
+indent_size = 4
 ij_swift_align_group_field_declarations = false
 ij_swift_align_multiline_array_initializer_expression = true
 ij_swift_align_multiline_binary_operation = false
